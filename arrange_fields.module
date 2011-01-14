@@ -120,8 +120,16 @@ function arrange_fields_menu() {
  
 
 
-function arrange_fields_perm() {
-  return array("administer arrange fields");
+function arrange_fields_permission() {
+  
+  $arr = array(
+    "administer arrange fields" => array(
+      "title" => t("Administer Arrange Fields settings"),
+      "description" => t("Use and configure Arrange Fields module, as well as export & import settings."),
+    ),
+  );
+  
+  return $arr;
 }
 
 /**
@@ -356,7 +364,12 @@ function arrange_fields_popup_close_window() {
   arrange_fields_add_arrange_css_js();
 
   $GLOBALS["arrange_fields_in_popup"] = TRUE;
+  
+  $rtn = "";
+  
   $rtn .= "<div style='text-align: center;'>
+            In order for your changes to become visible, you must save and reload
+            the main window:<br><br>
             <input type='button' value='" . t("Close and Save/Reload Main Window") . "'
             onClick='arrangeFieldsClosePopup()'>
            </div>";
@@ -792,7 +805,7 @@ function arrange_fields_add_draggable_wrappers(&$form, $form_type, $disable_butt
     }
 
     // If using the captcha module, add that element as well.
-    if (is_array($form["captcha"])) {
+    if (isset($form["captcha"]) && is_array($form["captcha"])) {
       $fields[] = array("name" => "captcha", "element" => &$form["captcha"]);
     }
     
@@ -808,11 +821,12 @@ function arrange_fields_add_draggable_wrappers(&$form, $form_type, $disable_butt
     $field_name = $field_arr["name"];
     $element = &$field_arr["element"];
     
+    $element_type = af_get($element["#type"]);
     // We need to make sure that field_name does not contain trouble characters, like spaces.
     // The Profile module lets you create fieldsets with spaces in it, for example.
     $field_name = preg_replace("/[^a-zA-Z0-9]/", "-", $field_name);
     
-    if ($element["#arrange_fields_added_wrappers"] == TRUE) {
+    if (af_get($element["#arrange_fields_added_wrappers"]) == TRUE) {
       // We have already added wrappers to this element.  This can possibly
       // happen when we are working on Webforms, based on the way the logic works,
       // we can have the same elements in there twice.
@@ -821,15 +835,13 @@ function arrange_fields_add_draggable_wrappers(&$form, $form_type, $disable_butt
     
     // Make sure we are not still looking at a hidden or otherwise unwanted
     // field which might be present because of the way I am doing Webform fields.
-    if ($element["#type"] == "hidden" 
-    || $element["#type"] == "token"
-    || $element["#type"] == "value") {
+    if ($element_type == "hidden" 
+    || $element_type == "token"
+    || $element_type == "value") {
       // Just skip to the next one.
       continue;
     }
 
-    
-    $field_type = $element["#type"];
     $edit_link = "";
     $edit_link = "<div class='arrange-fields-control-handle'>";
 
@@ -861,14 +873,14 @@ function arrange_fields_add_draggable_wrappers(&$form, $form_type, $disable_butt
     }
     
     
-    if ($element["#type"] == "vertical_tabs") {
+    if ($element_type == "vertical_tabs") {
       // The vertical tabs need a slightly-altered field name so we know what it is later.
       $field_name .= "-vertical-tabs";      
     }    
     
     
     $edit_link .= "<span class='arrange-fields-handle-region'> &nbsp; &nbsp; </span>
-                    <a href='javascript: arrangeFieldsDialogConfigureField(\"$field_name\",\"$field_type\");' class='arrange-fields-config-link' 
+                    <a href='javascript: arrangeFieldsDialogConfigureField(\"$field_name\",\"$element_type\");' class='arrange-fields-config-link' 
                     title='Configure this field'>&nbsp;</a>";
     $edit_link .= "</div>";
     
@@ -877,7 +889,7 @@ function arrange_fields_add_draggable_wrappers(&$form, $form_type, $disable_butt
     $css_id = "edit-$field_name-draggable-wrapper";
 
     // Are we dealing with a fieldset?**     
-    if ($element["#type"] == "fieldset" && $field_name != "captcha") {
+    if ($element_type == "fieldset" && $field_name != "captcha") {
       // Fieldsets get an extra css_class and the ID changes.
       $css_class .= " draggable-form-item-fieldset";
       $css_id = "edit-$field_name-fieldset-draggable-wrapper";        
@@ -891,7 +903,7 @@ function arrange_fields_add_draggable_wrappers(&$form, $form_type, $disable_butt
     
     // Vertical tabs blocks get an extra class around them so we can better target
     // them in CSS.
-    if ($element["#type"] == "vertical_tabs") {
+    if ($element_type == "vertical_tabs") {
       $css_class .= " arrange-fields-vertical-tabs-wrapper ";
     }
     
@@ -899,12 +911,15 @@ function arrange_fields_add_draggable_wrappers(&$form, $form_type, $disable_butt
     // Set the prefix and suffix for this field such that we 
     // wrap a div around it which the jquery can lock onto later to
     // make it draggable.
+    if (!isset($element["#prefix"])) $element["#prefix"] = "";
+    if (!isset($element["#suffix"])) $element["#suffix"] = "";
+    
     $element["#prefix"] .= "<div id='$css_id' class='$css_class'>$edit_link";
     $element["#suffix"] .= "</div>"; 
    
     // If the field is a button, and we have chosen to disable buttons, then
     // disable this one.
-    if ($element["#type"] == "submit" || $element["#type"] == "button") {
+    if ($element_type == "submit" || $element_type == "button") {
       if ($disable_buttons) {
           //$element["#attributes"]["disabled"] = "disabled";
           //$element["#attributes"]["class"] .= " disabled-button ";
@@ -1031,8 +1046,8 @@ function arrange_fields_get_form_fields(&$arr, $previous_key = "") {
  */
 function arrange_fields_form_alter(&$form, &$form_state, $form_id) {
 
-  $form_type = $GLOBALS["arrange_fields_editing_type"];
-  if ($GLOBALS["arrange_fields_editing"] == $form_id) {
+  $form_type = af_get($GLOBALS["arrange_fields_editing_type"]);
+  if (af_get($GLOBALS["arrange_fields_editing"]) == $form_id) {
     // meaning, we are arranging the fields on the current form_id...
     // Let's unset the various elements which will just get in the
     // way of the fields.
@@ -1040,7 +1055,7 @@ function arrange_fields_form_alter(&$form, &$form_state, $form_id) {
     
     $form["#attributes"]["class"] = "arrange-fields-container";
             
-    if (!$GLOBALS["arrange_fields_added_wrappers_" . $form["form_id"]["#value"]]) {
+    if (!af_get($GLOBALS["arrange_fields_added_wrappers_" . $form["form_id"]["#value"]])) {
       arrange_fields_add_draggable_wrappers($form, $form_type, TRUE);
     }
 
@@ -1056,7 +1071,7 @@ function arrange_fields_form_alter(&$form, &$form_state, $form_id) {
 
     // If this is a webform, and we are looking at submission data, then we do not want to try to
     // arrange any fields.  Doing so (at least at the moment) does not look right.
-    if ($form_type == "webform" && is_array($form["submission_info"]) && $form["submission_info"]["#type"] == "fieldset") {
+    if ($form_type == "webform" && isset($form["submission_info"]) && is_array($form["submission_info"]) && $form["submission_info"]["#type"] == "fieldset") {
       return;
     }
     
@@ -1068,7 +1083,7 @@ function arrange_fields_form_alter(&$form, &$form_state, $form_id) {
     $form["#attributes"]["class"] .= " arrange-fields-container ";
     $form["#attributes"]["class"] .= " arrange-fields-container-$fid ";
     
-    if (!$GLOBALS["arrange_fields_added_wrappers_" . $form["form_id"]["#value"]]) {
+    if (!af_get($GLOBALS["arrange_fields_added_wrappers_" . $form["form_id"]["#value"]])) {
       arrange_fields_add_draggable_wrappers($form, $form_type);
     }
 
@@ -1081,17 +1096,17 @@ function arrange_fields_form_alter(&$form, &$form_state, $form_id) {
       if (trim($line) == "") continue; // skip blanks
       
       $temp = explode(",", $line);
-      $wrapper_id = trim($temp[0]);
-      $pos_top = trim($temp[1]);
-      $pos_left = trim($temp[2]);
-      $element_type = trim($temp[3]);
-      $element_id = trim($temp[4]);
-      $width = trim($temp[5]);
-      $height = trim($temp[6]);
-      $wrapper_width = trim($temp[7]);
-      $wrapper_height = trim($temp[8]);
-      $label_display = trim($temp[9]);
-      $label_vertical_align = trim($temp[10]);
+      $wrapper_id = trim(af_get($temp[0]));
+      $pos_top = trim(af_get($temp[1]));
+      $pos_left = trim(af_get($temp[2]));
+      $element_type = trim(af_get($temp[3]));
+      $element_id = trim(af_get($temp[4]));
+      $width = trim(af_get($temp[5]));
+      $height = trim(af_get($temp[6]));
+      $wrapper_width = trim(af_get($temp[7]));
+      $wrapper_height = trim(af_get($temp[8]));
+      $label_display = trim(af_get($temp[9]));
+      $label_vertical_align = trim(af_get($temp[10]));
       
       $text_label_display = $label_display;
       if ($label_display == "inline-block") {
@@ -1112,13 +1127,13 @@ function arrange_fields_form_alter(&$form, &$form_state, $form_id) {
       // If so, add 
       if ($temp[7] == "~~markup_element~~") {
 
-        $markup_width = $temp[8];
-        $markup_height = $temp[9];
-        $safe_markup_body = trim($temp[10]);
-        $markup_body = arrange_fields_unconvert_unsafe_chars(trim($temp[10]));
-        $safe_wrapper_style = trim($temp[11]);
-        $wrapper_style = arrange_fields_unconvert_unsafe_chars(trim($temp[11]));
-        $z_index = trim($temp[12]);
+        $markup_width = af_get($temp[8]);
+        $markup_height = af_get($temp[9]); 
+        $safe_markup_body = trim(af_get($temp[10]));
+        $markup_body = arrange_fields_unconvert_unsafe_chars(trim(af_get($temp[10])));
+        $safe_wrapper_style = trim(af_get($temp[11]));
+        $wrapper_style = arrange_fields_unconvert_unsafe_chars(trim(af_get($temp[11])));
+        $z_index = trim(af_get($temp[12]));
         
         $markup_elements .= "
         <div class='draggable-form-item arrange-fields-draggable-markup' 
@@ -1461,14 +1476,32 @@ function arrange_fields_page_alter(&$page) {
   // If we are on one of our popup pages, we do not want to show any extra content
   // like sidebars and the like.  Only keep the "content" array, as well
   // as the properties who are prefixed by a # symbol.
-  if ($GLOBALS["arrange_fields_in_popup"]) {    
+  if (af_get($GLOBALS["arrange_fields_in_popup"])) {    
     foreach ($page as $key => $val) {
       if (!strstr($key, "#") && $key != "content") {
         unset($page[$key]);    
       }
     }
     
+  }  
+}
+
+/**
+ * This is a helper function which will let me attempt to access
+ * indexes in an array which might not exist WITHOUT setting off
+ * a PHP Notice message in Drupal.  A little kludgy?  Perhaps, but
+ * I feel that it makes the code much more readable.
+ * For example, instead of:
+ *   $x = (isset($GLOBALS["xyz"])) ? $GLOBALS["xyz"] : "";
+ * I can just type:
+ *   $x = af_get($GLOBALS["xyz"]);
+ * See what I mean?  Much more simple and readable.
+ **/
+function af_get(&$val) {
+  if (isset($val)) {
+    return $val;
   }
-  
-  
+  else {
+    return ""; 
+  }
 }

@@ -4,6 +4,11 @@ Changelog for Arrange Fields
 For Drupal 7.x
 ===================
 
+01-14-2011
+  Tweaking some display issues, and doing my best to get rid
+  of PHP notices being generated from this module.  Also, corrected
+  some instruction text to be correct for D7, instead of D6.
+
 01-13-2011
   Putting out the first (alpha) release for Drupal 7
 

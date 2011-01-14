@@ -47,20 +47,15 @@ Restrictions
 Directions
 ======================
 
-- Make sure you have correctly installed and configured the jquery_ui module!
-  Read through it's README.txt file for detailed instructions.  Make sure
-  you get the correct version of the plugin! (NOT the most recent version unless
-  you know what you're doing!)
-
 - Unpack the module files into /sites/all/modules/arrange_fields.
 
-- Visit your admin/build/modules page in Drupal and enable the module.
+- Visit your modules page in Drupal and enable the module.
 
-- Visit your admin/user/permissions and give authorized users the
+- Visit your permissions and give authorized users the
   "administer arrange fields" permission, if desired.  (Otherwise, only the
   admin user will be able to use it).
 
-- To begin arranging fields just visit admin/settings/arrange-fields to see a main menu page.
+- To begin arranging fields just visit admin/config/arrange-fields to see a main menu page.
   Visit the Settings tab on that page to add arbitrary form_id's to the list which
   you can arrange.
   OR...

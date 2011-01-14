@@ -1,4 +1,6 @@
 ;  $Id$
 name = Arrange Fields
-description = Drag and drop form fields into any position you want.
+description = Drag and drop form fields into any position.
+configure = admin/config/arrange-fields
+tags[] = arrange_fields
 core = 7.x 
