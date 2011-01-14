@@ -1,10 +1,15 @@
 ; $Id$
 =======================
 Arrange Fields
+(For Drupal 7)
 =======================
 Richard Peacock (richard@richardpeacock.com)
 
-This module lets you drag-and-drop the fields of any CCK content type, Webform,
+!! This is a recent port to Drupal 7 from the stable Drupal 6 version.  As such,
+   there may be hidden gotcha's and surprises.  Therefor, this code must stay
+   "beta" for a while! !!
+
+This module lets you drag-and-drop the fields of any content type, Webform,
 or almost any other form in Drupal into the 
 positions you would like for editing. This makes it super simple to have forms 
 with inline fields, which you can change at any point. Tab indexing is also respected, 
@@ -59,7 +64,7 @@ Directions
   Visit the Settings tab on that page to add arbitrary form_id's to the list which
   you can arrange.
   OR...
-  - For CCK:
+  - For Drupal content types:
     - visit Administer -> Content Types (the link
       is at the top of the page, as a tab).  You can also select "manage fields" 
       for a content type, and then there will be a new tab at the top of 
