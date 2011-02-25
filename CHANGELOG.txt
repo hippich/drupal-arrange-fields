@@ -1,4 +1,3 @@
-; $Id$ 
 ===================
 Changelog for Arrange Fields
 For Drupal 7.x

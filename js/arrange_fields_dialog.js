@@ -1,4 +1,3 @@
-// $Id$
 
 // This script is always meant to be loaded in conjunction with arrange_fields.js.
 // It contains the functions dealing with jquery dialogs, which, because of their

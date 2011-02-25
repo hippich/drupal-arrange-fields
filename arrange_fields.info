@@ -1,4 +1,3 @@
-;  $Id$
 name = Arrange Fields
 description = Drag and drop form fields into any position.
 configure = admin/config/arrange-fields

@@ -1,4 +1,3 @@
-; $Id$
 =======================
 Arrange Fields
 (For Drupal 7)

@@ -1,4 +1,3 @@
-// $Id$
 
 /*
   This js file is meant to be used on the node/edit page of the form.  Meaning, this is not

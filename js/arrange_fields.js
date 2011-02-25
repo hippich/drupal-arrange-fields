@@ -1,4 +1,3 @@
-// $Id$
 
 
 // Some global variables we will need...
