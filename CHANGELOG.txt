@@ -1,7 +1,16 @@
+; $Id$ 
 ===================
 Changelog for Arrange Fields
 For Drupal 7.x
 ===================
+
+3-16-2011
+ Made a minor change when looking at elements in the form array
+ to prevent PHP notice messages from appearing.
+
+1-26-2011
+ Made a slight change to init a variable before using it. This
+ was causing a PHP Notice to appear in certain situations.
 
 01-14-2011
   Tweaking some display issues, and doing my best to get rid

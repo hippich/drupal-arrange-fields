@@ -483,6 +483,10 @@ function arrange_fields_init() {
     $GLOBALS["arrange_fields_editing"] = " ";
   }
 
+  if (!isset($GLOBALS["arrange_fields_editing_field"])) {
+    $GLOBALS["arrange_fields_editing_field"] = FALSE;
+  }
+
   // is webform installed?
   if (function_exists("webform_menu")) {
     $GLOBALS["arrange_fields_webform_installed"] = TRUE;
@@ -990,14 +994,13 @@ function arrange_fields_get_form_fields(&$arr, $previous_key = "") {
       
       
 
-
-
       // Is this the buttons element on a node form?  If so, we want
       // the entire buttons array, NOT each individual button (this was
       // causing a bug where Diff's View changes and the Delete button
       // were not arrangeable.
-     if ($name == "buttons" 
-        && $element["#type"] == "" 
+     if ($name == "buttons"        
+        && !isset($element["#type"]) 
+        && isset($element["submit"])
         && $element["submit"]["#type"] == "submit") {
         // Okay, we found it (most likely, anyway).
         // Let's add it to our return array.                      
