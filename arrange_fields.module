@@ -569,6 +569,7 @@ function arrange_fields_display_form($form_type) {
   $GLOBALS["arrange_fields_editing_type"] = $form_type;
   
   $node_form = new stdClass();
+  $node_form->language = "";  // set here just to keep it from throwing a notice.
   $node_form->type = $form_type;
 
   $rtn .= drupal_render(drupal_get_form($form_id, $node_form));
