@@ -4,6 +4,10 @@ Changelog for Arrange Fields
 For Drupal 7.x
 ===================
 
+4-17-2011
+ Somehow the png graphic for the grid got corrupted, so
+ I am replacing it.
+
 3-19-2011
  Made minor change to prevent a notice from showing up when
  arranging a content type (the notice was coming from core's
