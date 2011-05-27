@@ -4,6 +4,13 @@ Changelog for Arrange Fields
 For Drupal 7.x
 ===================
 
+5-26-2011
+ Added a new "Enable form_id discovery mode" checkbox to the settings
+ page to make it easier to find out form id's on the page.  If checked,
+ administrators will see a printout at the top of every page with a list
+ of what forms are on that page. You can then enter those form_id's into
+ the settings page to arrange them.
+
 4-17-2011
  Somehow the png graphic for the grid got corrupted, so
  I am replacing it.
