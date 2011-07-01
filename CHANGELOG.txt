@@ -4,6 +4,10 @@ Changelog for Arrange Fields
 For Drupal 7.x
 ===================
 
+6-30-2011
+ Added support for the Mollom module, when using Webforms (it was not
+ arrangeble until now)
+
 5-26-2011
  Added a new "Enable form_id discovery mode" checkbox to the settings
  page to make it easier to find out form id's on the page.  If checked,

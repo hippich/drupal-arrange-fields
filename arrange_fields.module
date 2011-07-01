@@ -669,7 +669,8 @@ function arrange_fields_display_otherform($form_id) {
   
   drupal_set_title("Arrange fields - Other Forms - $form_id");
   $rtn = "";
-    
+  
+  
   $position_data = variable_get("arrange_fields_position_data_$form_id", FALSE);
   if ($position_data) {
     // Meaning, we have position data already for this form, so it is NOT
@@ -823,6 +824,12 @@ function arrange_fields_add_draggable_wrappers(&$form, $form_type, $disable_butt
     if (isset($form["captcha"]) && is_array($form["captcha"])) {
       $fields[] = array("name" => "captcha", "element" => &$form["captcha"]);
     }
+    
+    // If using the mollom captcha module, add that element as well
+    if (isset($form["mollom"]) && is_array($form["mollom"])) {
+      $fields[] = array("name" => "mollom", "element" => &$form["mollom"]);
+    }
+    
     
   }
   else {
