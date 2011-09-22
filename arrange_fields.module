@@ -159,19 +159,24 @@ function arrange_fields_settings_form() {
                       you will be able to arrange them by clicking on them
                       at the bottom of the ") . l(t("Arrange Fields admin settings page"), "admin/settings/arrange-fields") . ".
                       <br>
-                      " . t("Example") . ": <br>
-                      &nbsp;&nbsp;<strong>user_register_form</strong>
-                      <br>
+                      " . t("Example") . ": <br>                      
                       &nbsp;&nbsp;<strong>my_custom_form_id_1</strong>
+                      <br>
+                      " . t("(Advanced) Include File: ") . "<br>" . t("
+                            You may also specify one required include file after the form_id
+                            in the format <em>form_id:module,include.file.inc</em>") . "<br>
+                            " . t("Example:") . "<br>
+                            &nbsp;&nbsp;<strong>contact_site_form:contact, contact.pages.inc</strong>
                       ",
   );
   
   $form["arrange_fields_enable_form_id_discovery"] = array(
     "#type" => "checkbox",
-    "#title" => t("Enable form_id discovery mode"),
+    "#title" => t("Enable form_id and include file discovery mode"),
     "#default_value" => variable_get("arrange_fields_enable_form_id_discovery", 0),
     "#description" => t("If enabled, users with the 'Administer Arrange Fields settings' permission
-                         will see the ID of any form on the page printed out.  This can
+                         will see the ID of any form on the page printed out, as well as
+                         any possible include files which might be required.  This can
                          be very helpful in dicovering form_id's, for use with the 
                          Additional form_id's box above."),
   );
@@ -656,6 +661,8 @@ function arrange_fields_display_webform($nid) {
 }
 
 
+
+
 /**
  * Similar function as arrange_fields_display_form,
  * but this is specifically for other, more generic forms
@@ -667,9 +674,33 @@ function arrange_fields_display_otherform($form_id) {
 
   $form_type = "otherform";
   
+  // If the form_id has a : in it, it means the user has also specified
+  // include files they want included.
+  // Expected to look a little like this:
+  // form_id : module , include.file
+  // ex:  contact_site_form : contact, contact.pages.inc
+  if (strstr($form_id, ":")) {
+    $temp = explode(":", $form_id);
+    $form_id = trim($temp[0]);
+    $include_data = explode(",", $temp[1]);
+    $include_module = trim($include_data[0]);
+    $include_file = trim($include_data[1]);
+    
+    // Okay, still not done.  The include file looks something like this:
+    // contact.pages.inc
+    // We need to separate the extension off of it.
+    $temp = explode(".", $include_file);
+    $include_ext = trim($temp[count($temp) - 1]);
+    
+    $include_file = trim(str_replace(".$include_ext", "", $include_file));
+
+    // Okay, we FINALLY have enough information to include the file!  Let's give it a try!
+    module_load_include($include_ext, $include_module, $include_file);
+    
+  }
+  
   drupal_set_title("Arrange fields - Other Forms - $form_id");
   $rtn = "";
-  
   
   $position_data = variable_get("arrange_fields_position_data_$form_id", FALSE);
   if ($position_data) {
@@ -696,7 +727,7 @@ function arrange_fields_display_otherform($form_id) {
   // The form we will be rearranging...
   $GLOBALS["arrange_fields_editing"] = $form_id;
   $GLOBALS["arrange_fields_editing_type"] = $form_type;
-  
+   
   $rtn .= drupal_render(drupal_get_form($form_id));
 
   $rtn .= "<div>" . t("If you need more room, move a field close to the bottom, then save positions.  The
@@ -1060,6 +1091,51 @@ function arrange_fields_get_form_fields(&$arr, $previous_key = "") {
 }
 
 
+/**
+ * This function is used to tell the user what module include files have been loaded
+ * on the current page, in an effort to help them figure out which to enter as include files
+ * on the Arrange Fields settings page. 
+ * 
+ *
+ */
+function arrange_fields_get_included_module_files() {
+  
+  $rtn = "";
+  
+  $arr = get_included_files();
+  foreach ($arr as $file) {
+    // Get rid of the basepath information.
+    $temp = explode($GLOBALS["base_path"], $file);
+    $file = $temp[1];
+    
+    // Skip anything that doesn't have "modules" in the name.
+    if (!strstr($file, "modules/")) continue;
+    
+    // If it contains ".module", as in, this is a .module file, we do not care.
+    if (strstr($file, ".module")) continue;
+    
+    // if it contains "devel/", "/entity/" or "/field/", or ".field.inc" we do not care.
+    if (strstr($file, "devel/")) continue;
+    if (strstr($file, "/entity/")) continue;
+    if (strstr($file, "/field/")) continue;
+    if (strstr($file, ".field.inc")) continue;
+    
+    // Now, split again on the modules/ string to get just the module and file name.
+    $temp = explode("modules/", $file);
+    $file = $temp[1];
+    
+    // If the result doesn't have a "." in it, skip it.
+    if (!strstr($file, ".")) continue;
+    
+    
+    $rtn .= "&nbsp; &nbsp; &nbsp; <em>$file</em> <br>";
+  }
+  
+  
+  return $rtn;
+}
+
+
 
 /**
  * Implementation of hook_form_alter().
@@ -1071,6 +1147,15 @@ function arrange_fields_form_alter(&$form, &$form_state, $form_id) {
     drupal_set_message(t("Arrange Fields module: Form ID <strong>") . $form_id . t("</strong> detected.
                         <br>To turn off this message, visit ") . l("admin/config/arrange-fields/settings", "admin/config/arrange-fields/settings") . t(" and uncheck
                         the Enable form_id discovery mode checkbox."));
+    
+    $tmf = arrange_fields_get_included_module_files();
+    if ($tmf) {
+      drupal_set_message(t("These are possible include files which <b>may or may not</b> need
+                          to be specified along with the form_id:") . "<br>$tmf" . t("
+                          If you are unsure what these are used for, please ignore them, and just
+                          use the form_id stated above."));
+    }
+    
   }
   
   $form_type = af_get($GLOBALS["arrange_fields_editing_type"]);
