@@ -154,7 +154,7 @@ function arrange_fields_settings_form() {
                       are longer than 100 characters are allowed, but may not work 
                       correctly if the first 100 characters are identical between two
                       or more ids.
-                      <br>
+                      <br> 
                       After you enter complete form_id's here and hit Save,
                       you will be able to arrange them by clicking on them
                       at the bottom of the ") . l(t("Arrange Fields admin settings page"), "admin/settings/arrange-fields") . ".
