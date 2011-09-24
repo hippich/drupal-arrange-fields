@@ -2,7 +2,12 @@
 ===================
 Changelog for Arrange Fields
 For Drupal 7.x
-=================== 
+===================
+
+9-24-2011
+ Found a bug which was causing certain webform components to not be
+ configurable (they didn't get the configure link on the hover handle),
+ and they were not being recognized as webform components.
 
 9-22-2011
  Added the ability to specify module include files along with form_id's, 

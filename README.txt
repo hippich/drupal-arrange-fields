@@ -1,12 +1,9 @@
+; $Id$
 =======================
 Arrange Fields
 (For Drupal 7)
 =======================
 Richard Peacock (richard@richardpeacock.com)
-
-!! This is a recent port to Drupal 7 from the stable Drupal 6 version.  As such,
-   there may be hidden gotcha's and surprises.  Therefor, this code must stay
-   "beta" for a while! !!
 
 This module lets you drag-and-drop the fields of any content type, Webform,
 or almost any other form in Drupal into the 
