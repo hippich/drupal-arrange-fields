@@ -14,7 +14,14 @@
   /*float: left;*/
   z-index: 100;    
 }
-
+/* 
+   This corrects a weird bug: when people chose "inline" for the label for
+   webform components, it resizes the textarea all weird.  This resets
+   the label back to default block-level.
+*/
+.arrange-fields-container .draggable-form-item .webform-container-inline div {
+  display: block;  
+}
 
 .arrange-fields-container .draggable-form-item fieldset{
   display: block;

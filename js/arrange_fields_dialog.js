@@ -132,8 +132,6 @@
       if (labelDisplay == "") { labelDisplay = "block"; }  
     }
       
-    
-    
     // Let's actually affect these changes on the page.
     jQuery("#" + fieldId).css("width", wrapperWidth);
     jQuery("#" + fieldId).css("height", wrapperHeight);
@@ -147,6 +145,11 @@
     if (labelDisplay == "inline-block") { 
       radioDisplay = "inline"; 
     }
+    if (radioDisplay == "block") {
+      // Unset the style for radio buttons/checkboxes, so it goes back to default
+      radioDisplay = "";
+    }
+    
     var boolRadio = false;
     
     // Grab all the sibling elements under the wrapper and make them

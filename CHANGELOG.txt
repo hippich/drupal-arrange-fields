@@ -4,6 +4,19 @@ Changelog for Arrange Fields
 For Drupal 7.x
 ===================
 
+9-25-2011
+ Thanks to user drizzi (http://drupal.org/user/226909) for letting me debug on his server, I discovered the
+ solution to an anoying bug affecting several Webforms users.  When you set
+ the label to be "inline" in webforms, a strange interaction with CSS and jQuery UI
+ caused textfields to resize strangely.  From now on, use Arrange Fields to set the
+ label as inline or not.
+ 
+ Also, fixed an issue where sometimes form elements wind up "stacked" on top of each other
+ when arranging fields for the first time.
+ 
+ Also fixed a bug where setting radio buttons/checkboxes to inline, then back to block
+ caused a problem.
+
 9-24-2011
  Found a bug which was causing certain webform components to not be
  configurable (they didn't get the configure link on the hover handle),
