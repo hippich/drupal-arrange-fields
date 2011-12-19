@@ -4,6 +4,10 @@ Changelog for Arrange Fields
 For Drupal 7.x
 ===================
 
+12-19-2011
+ Added very small CSS tweak, to correct a problem with the webform datepicker component, 
+ which caused it to stack its elements in a weird way. Isse: [#1372978]
+
 9-25-2011
  Thanks to user drizzi (http://drupal.org/user/226909) for letting me debug on his server, I discovered the
  solution to an anoying bug affecting several Webforms users.  When you set

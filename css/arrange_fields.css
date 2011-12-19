@@ -19,8 +19,16 @@
    webform components, it resizes the textarea all weird.  This resets
    the label back to default block-level.
 */
-.arrange-fields-container .draggable-form-item .webform-container-inline div {
-  display: block;  
+.arrange-fields-container .draggable-form-item .webform-container-inline div.ui-wrapper, 
+.arrange-fields-container .draggable-form-item .webform-container-inline div.description,
+.arrange-fields-container .draggable-form-item .webform-container-inline div.ui-resizable-handle {
+  display: block;
+}
+
+.arrange-fields-container .ui-resizable-handle {
+  min-width: 10px;
+  min-height: 10px;
+  background-color: #ddd;
 }
 
 .arrange-fields-container .draggable-form-item fieldset{
