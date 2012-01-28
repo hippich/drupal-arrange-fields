@@ -38,8 +38,7 @@ function arrange_fields_menu() {
     "type" => MENU_LOCAL_TASK,
     "weight" => 5,
   );
-  
- 
+   
   // Admin settings menu...
   $items["admin/config/arrange-fields"] = array(
     "title" => "Arrange fields",
@@ -1144,7 +1143,6 @@ function arrange_fields_get_included_module_files() {
 }
 
 
-
 /**
  * Implementation of hook_form_alter().
  *
@@ -1305,7 +1303,7 @@ function arrange_fields_form_alter(&$form, &$form_state, $form_id) {
       // This usually happens when you have CAPTCHA installed.
       if ($width != "0px" && $element_type != "" && $element_id == "" && !strstr($wrapper_id, "-vertical-tabs-")) {        
         
-        // We do not know the element_id in this situation
+        // We do not know the element_id in this situation        
         $css_markup .= "        
           #$fid #$wrapper_id $element_type.form-text, 
           #$fid #$wrapper_id $element_type.form-textarea {
@@ -1320,9 +1318,18 @@ function arrange_fields_form_alter(&$form, &$form_state, $form_id) {
         $css_markup .= "
           #$fid #$wrapper_id $element_type#$element_id {
             width: $width;
-            height: $height;
-          }        
-        ";        
+            ";
+        // If this is an input field (not a textarea) we do not need to specify the height.
+        // This is hopefully a fix to a bug where, for some users, their textfields get shrunk down
+        // to only 1px.
+        if ($element_type != "input") {          
+          $css_markup .= "
+              height: $height;        
+            ";        
+        }
+        
+        $css_markup .= "    }        ";
+        
       }
       
       // Handle any configurations which were set in the configure dialog.
@@ -1605,6 +1612,7 @@ function arrange_fields_page_alter(&$page) {
     
   }  
 }
+
 
 /**
  * This is a helper function which will let me attempt to access

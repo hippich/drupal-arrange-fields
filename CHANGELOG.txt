@@ -4,6 +4,13 @@ Changelog for Arrange Fields
 For Drupal 7.x
 ===================
 
+1-28-2012
+ Made changes to fix a persistant issue for some users, where textfields
+ sometimes have a height of only 1px.  To this end, this module no
+ longer attempts to set the height of textfields, only textareas.
+ The orignal issue is: http://drupal.org/node/1241750
+
+
 12-19-2011
  Added very small CSS tweak, to correct a problem with the webform datepicker component, 
  which caused it to stack its elements in a weird way. Isse: [#1372978]
