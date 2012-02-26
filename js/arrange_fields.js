@@ -1,3 +1,4 @@
+// $Id$
 
 
 // Some global variables we will need...
@@ -42,12 +43,19 @@ Drupal.behaviors.arrangeFieldsStartup = {
   });
   
 
+  // Figure out what the gridWidth should be  (10,10 is default).
+  var gridWidth = 10;
+  if (Drupal.settings.arrangeFieldsGridWidth != null) {
+    gridWidth = Drupal.settings.arrangeFieldsGridWidth;
+  }
+  if (gridWidth < 1) gridWidth = 10;  
+  
   // This actually makes the draggable items draggable.
   jQuery(".arrange-fields-container .draggable-form-item").draggable({
     stop: function(event, ui) { arrangeFieldsRepositionToGrid(false); },
     containment: ".arrange-fields-container", 
     scroll: true,
-    grid : [10,10],
+    grid : [gridWidth,gridWidth],
     start: function(event, ui) {arrangeFieldsDragging = true;},
     stop:  function(event, ui) {arrangeFieldsDragging = false;}
   });
@@ -87,7 +95,13 @@ Drupal.behaviors.arrangeFieldsStartup = {
   */
 function arrangeFieldsRepositionToGrid(startup) {
 
+  // Figure out what the gridWidth should be  (10,10 is default).
   var gridWidth = 10;
+  if (Drupal.settings.arrangeFieldsGridWidth != null) {
+    gridWidth = Drupal.settings.arrangeFieldsGridWidth;
+  }
+  if (gridWidth < 1) gridWidth = 10;
+    
   jQuery(".arrange-fields-container .draggable-form-item").each(function (index, element) {
     var postop = jQuery(element).css("top");
     var posleft = jQuery(element).css("left");

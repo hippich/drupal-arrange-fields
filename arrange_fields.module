@@ -141,6 +141,16 @@ function arrange_fields_permission() {
 function arrange_fields_settings_form() {
   $form = array();
 
+  $form["arrange_fields_grid_width"] = array(
+    "#type" => "select",
+    "#title" => t("Grid width"),
+    "#options" => array(1 => "1px", 5 => "5px", 10 => "10px (default)", 15 => "15px", 20 => "20px"),
+    "#default_value" => variable_get("arrange_fields_grid_width", 10),
+    "#description" => t("This setting determines the spacing between elements on the grid (when arranging fields).
+                         For more free-form movement, set to 1px.  More rigid, boxy movement, set to 20px.
+                         If you are unsure what to set, leave this at 10px."),
+  );  
+  
   $form["arrange_fields_other_form_ids"] = array(
     "#type" => "textarea",
     "#title" => t("Additional form_id's"),
@@ -570,7 +580,8 @@ function arrange_fields_display_form($form_type) {
   
   // We want to get the form which will let us save the position
   // information.  
-  $rtn .= drupal_render(drupal_get_form("arrange_fields_position_form", $form_id, $form_type));
+  $temp_form = drupal_get_form("arrange_fields_position_form", $form_id, $form_type);
+  $rtn .= drupal_render($temp_form);
 
   $rtn .= "<div>" . t("Use this form to drag-and-drop fields into the order which
           you want them to appear on the node/edit page.") . "</div>
@@ -586,7 +597,8 @@ function arrange_fields_display_form($form_type) {
   $node_form->language = "";  // set here just to keep it from throwing a notice.
   $node_form->type = $form_type;
 
-  $rtn .= drupal_render(drupal_get_form($form_id, $node_form));
+  $temp_form = drupal_get_form($form_id, $node_form);
+  $rtn .= drupal_render($temp_form);
   
   $rtn .= "<div>" . t("If you need more room, move a field close to the bottom.  The
           container will resize, adding more room.") . "</div>";
@@ -636,7 +648,8 @@ function arrange_fields_display_webform($nid) {
   
   // We want to get the form which will let us save the position
   // information.  
-  $rtn .= drupal_render(drupal_get_form("arrange_fields_position_form", $form_id, $form_type));
+  $temp_form = drupal_get_form("arrange_fields_position_form", $form_id, $form_type);
+  $rtn .= drupal_render($temp_form);
 
   $rtn .= "<div>" . t("Use this form to drag-and-drop fields into the order which
           you want them to appear on the webform entry page.") . "</div>
@@ -649,7 +662,8 @@ function arrange_fields_display_webform($nid) {
   $GLOBALS["arrange_fields_editing"] = $form_id;
   $GLOBALS["arrange_fields_editing_type"] = $form_type;
   
-  $rtn .= drupal_render(drupal_get_form($form_id, $webform_node, NULL, TRUE));
+  $temp_form = drupal_get_form($form_id, $webform_node, NULL, TRUE);
+  $rtn .= drupal_render($temp_form);
 
   $rtn .= "<div>" . t("If you need more room, move a field close to the bottom, then save positions.  The
           container will resize, adding more room.") . "</div>";
@@ -714,7 +728,8 @@ function arrange_fields_display_otherform($form_id) {
   
   // We want to get the form which will let us save the position
   // information.  
-  $rtn .= drupal_render(drupal_get_form("arrange_fields_position_form", $form_id, $form_type));
+  $temp_form = drupal_get_form("arrange_fields_position_form", $form_id, $form_type);
+  $rtn .= drupal_render($temp_form);
 
   $rtn .= "<div>" . t("Use this form to drag-and-drop fields into the order which
           you want them to appear on the form entry page.") . "</div>
@@ -727,7 +742,8 @@ function arrange_fields_display_otherform($form_id) {
   $GLOBALS["arrange_fields_editing"] = $form_id;
   $GLOBALS["arrange_fields_editing_type"] = $form_type;
    
-  $rtn .= drupal_render(drupal_get_form($form_id));
+  $temp_form = drupal_get_form($form_id);
+  $rtn .= drupal_render($temp_form);
 
   $rtn .= "<div>" . t("If you need more room, move a field close to the bottom, then save positions.  The
           container will resize, adding more room.") . "</div>";
@@ -1384,6 +1400,9 @@ function arrange_fields_form_alter(&$form, &$form_state, $form_id) {
     
     drupal_add_js(array("arrangeFieldsDialogConfigObj" => $jsConfigArray), "setting");
     drupal_add_js(array("arrangeFieldsDialogMarkupObj" => $jsMarkupArray), "setting");
+    // Add in the user-specified grid width.
+    drupal_add_js(array("arrangeFieldsGridWidth" => variable_get("arrange_fields_grid_width", 10)), "setting");
+        
     
     if ($GLOBALS["arrange_fields_editing"] != $form_id) {
       // Meaning, we are not currently arranging this form.  The user
@@ -1392,12 +1411,12 @@ function arrange_fields_form_alter(&$form, &$form_state, $form_id) {
       // styles around the various divs so that it looks more natural.
       $css_markup .= "
       
-      .arrange-fields-container {
+      #$fid {
         border: 0;
         background: none;
       }
       
-      .arrange-fields-container .draggable-form-item {
+      #$fid .draggable-form-item {
         border: 0;
         background-color: transparent;
       }
@@ -1407,8 +1426,16 @@ function arrange_fields_form_alter(&$form, &$form_state, $form_id) {
     
     
     // Now, add in our css markup and markup elements...
-    $form["arrange_fields_css_markup_and_elements"] = array(
-      "#markup" => "<style>$css_markup</style>$markup_elements",
+    /*$head_array = array(
+      "#tag" => "style",
+      "#attributes" => array(
+        "type" => "text/css",
+      ),
+      "#value" => $css_markup,
+    );*/
+    //drupal_add_html_head($head_array, "arrange_fields_position_data");
+    $form["arrange_fields_css_markup_and_elements"] = array(    
+      "#markup" => "<style>$css_markup</style>$markup_elements",      
       "#after_build" => array("arrange_fields_add_form_css_js"),  // important if the form fails validation, we still get the CSS and JS added in.
     );
 

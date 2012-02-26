@@ -4,6 +4,25 @@ Changelog for Arrange Fields
 For Drupal 7.x
 ===================
 
+2-26-2012
+ Added ability to control the "grid width" used with Arrange Fields.
+ It is on the settings page.  Default is 10px.  If set to 1px, this
+ allows users to move fields with a complete freedom of movement.
+ Based on issue: http://drupal.org/node/1456534
+
+2-22-2012
+ Changed how the Arrange Fields style tag is set, as well as how
+ the form is targetted in CSS to be more specific.
+ based on advice from this issue: http://drupal.org/node/1450450
+
+2-19-2012
+ Made changes to keep a STRICT warning from appearing, as per this issue:
+ http://drupal.org/node/1170352
+ 
+-----------------
+Previous commits: 
+-----------------
+
 1-28-2012
  Made changes to fix a persistant issue for some users, where textfields
  sometimes have a height of only 1px.  To this end, this module no
