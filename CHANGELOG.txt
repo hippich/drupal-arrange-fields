@@ -4,6 +4,18 @@ Changelog for Arrange Fields
 For Drupal 7.x
 ===================
 
+5-21-2012
+ Fix for this bug: http://drupal.org/node/1473166.  The issue is that
+ the Ajax file upload field is no longer draggable.  I fixed it by
+ re-arranging how and when the draggable wrappers are added to elements,
+ placing them in a #pre_render function now.
+
+
+-----------------
+Previous commits: 
+-----------------
+
+
 2-26-2012
  Added ability to control the "grid width" used with Arrange Fields.
  It is on the settings page.  Default is 10px.  If set to 1px, this
@@ -19,9 +31,6 @@ For Drupal 7.x
  Made changes to keep a STRICT warning from appearing, as per this issue:
  http://drupal.org/node/1170352
  
------------------
-Previous commits: 
------------------
 
 1-28-2012
  Made changes to fix a persistant issue for some users, where textfields

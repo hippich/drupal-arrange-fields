@@ -875,8 +875,7 @@ function arrange_fields_add_draggable_wrappers(&$form, $form_type, $disable_butt
     if (isset($form["mollom"]) && is_array($form["mollom"])) {
       $fields[] = array("name" => "mollom", "element" => &$form["mollom"]);
     }
-    
-    
+        
   }
   else {
     // Not using webform, so we can use the function "get_form_fields()".
@@ -987,12 +986,20 @@ function arrange_fields_add_draggable_wrappers(&$form, $form_type, $disable_butt
     // Set the prefix and suffix for this field such that we 
     // wrap a div around it which the jquery can lock onto later to
     // make it draggable.
-    if (!isset($element["#prefix"])) $element["#prefix"] = "";
-    if (!isset($element["#suffix"])) $element["#suffix"] = "";
+    if (!isset($element["#af_prefix"])) $element["#af_prefix"] = "";
+    if (!isset($element["#af_suffix"])) $element["#af_suffix"] = "";
     
-    $element["#prefix"] .= "<div id='$css_id' class='$css_class'>$edit_link";
-    $element["#suffix"] .= "</div>"; 
+    $element["#af_prefix"] .= "<div id='$css_id' class='$css_class'>$edit_link";
+    $element["#af_suffix"] .= "</div>"; 
    
+    if (!isset($element["#pre_render"])) {
+      $element["#pre_render"] = array();
+    }
+    
+    // We need to use this function to add in our prefix and suffix.  This fixes
+    // a bug with the latest Webform module.
+    $element["#pre_render"][] = "arrange_fields_pre_render";
+    
     // If the field is a button, and we have chosen to disable buttons, then
     // disable this one.
     if ($element_type == "submit" || $element_type == "button") {
@@ -1028,6 +1035,40 @@ function arrange_fields_add_draggable_wrappers(&$form, $form_type, $disable_butt
 }
 
 
+/**
+ * This function is called before the elements are displayed on screen.
+ * The main thing we wish to do here is move the contents of
+ * #af_prefix and #af_suffix into the real #prefix and #suffix fields.
+ *
+ * @param unknown_type $element
+ * @return unknown
+ */
+function arrange_fields_pre_render($element) {
+  
+  if (!isset($element["#prefix"])) $element["#prefix"] = "";  
+  if (!isset($element["#suffix"])) $element["#suffix"] = "";  
+  
+ // if ($element["#type"] == "container") dpm($element);
+  
+  // If the type is a managed_file, let's take away the upload button, as it can cause
+  // weird problems with Arrange Fields after uploading.  This is due to some kind of
+  // conflict with the CSS, but I have not be able to figure that out yet.
+  if ($element["#type"] == "managed_file") {
+
+    if (isset($element["upload_button"])) {
+   //   unset($element["upload_button"]);
+    $element["upload_button"]["#executes_submit_callback"] = FALSE;
+    }
+  }
+  
+  if (isset($element["#af_prefix"])) {
+    $element["#prefix"] .= $element["#af_prefix"] ;
+    $element["#suffix"] .= $element["#af_suffix"] ;
+  }
+   
+  
+  return $element;
+}
 
 
 /**
