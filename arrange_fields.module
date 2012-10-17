@@ -1085,7 +1085,10 @@ function arrange_fields_pre_render($element) {
 function arrange_fields_get_form_fields(&$arr, $previous_key = "") {
   
   $rtn = array();
-  
+
+  // Since fieldsets are not supported yet, hide these from fields arrange form.
+  unset($arr['#groups']);
+
   foreach ($arr as $name => &$element) {
     if (is_array($element)) {
  
