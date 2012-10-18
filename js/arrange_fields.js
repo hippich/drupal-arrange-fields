@@ -157,9 +157,13 @@ function arrangeFieldsRepositionToGrid(startup) {
 function arrangeFieldsSavePositions() {
   
   var dataString = "";
+  var formData = {
+    draggableElements: []
+  };
   var maxBottom = 0;
   
   jQuery(".arrange-fields-container .draggable-form-item").each(function (index, element) {
+   var elementData = {};
    var id = jQuery(element)[0].id;
    var top = jQuery(element).css("top");
    var left = jQuery(element).css("left");
@@ -197,28 +201,36 @@ function arrangeFieldsSavePositions() {
      width = height = 0;
    }   
    
-   dataString += id + "," + top + "," + left + "," + inner_element_type + "," +inner_element_id + "," + width + "px," + height + "px,";
+   elementData.wrapper_id = id;
+   elementData.pos_top = top;
+   elementData.pos_left = left;
+   elementData.element_type = inner_element_type;
+   elementData.element_id = inner_element_id;
+   elementData.width = width + "px";
+   elementData.height = height + "px";
+
    
    // Do we have any extra data for this element?  Perhaps data from the config dialog?
    if (arrangeFieldsDialogConfigObj[id] != null) {
-     dataString += arrangeFieldsDialogConfigObj[id]["wrapperWidth"] + ",";
-     dataString += arrangeFieldsDialogConfigObj[id]["wrapperHeight"] + ",";
-     dataString += arrangeFieldsDialogConfigObj[id]["labelDisplay"] + ",";
-     dataString += arrangeFieldsDialogConfigObj[id]["labelVerticalAlign"] + ",";
+     elementData.wrapper_width = arrangeFieldsDialogConfigObj[id]["wrapperWidth"];
+     elementData.wrapper_height = arrangeFieldsDialogConfigObj[id]["wrapperHeight"];
+     elementData.label_display = arrangeFieldsDialogConfigObj[id]["labelDisplay"];
+     elementData.label_width = arrangeFieldsDialogConfigObj[id]["labelWidth"];
+     elementData.label_vertical_align = arrangeFieldsDialogConfigObj[id]["labelVerticalAlign"];
    }
    
    // Is this field a piece of custom markup which the user has added?  If so,
    // add whatever information we can about it from the object.
    if (arrangeFieldsDialogMarkupObj[id] != null) {
-     dataString += "~~markup_element~~,";
-     dataString += jQuery(element).width() + "px,";
-     dataString += jQuery(element).height() + "px,";
-     dataString += arrangeFieldsDialogMarkupObj[id]["markupBody"] + ",";
-     dataString += arrangeFieldsDialogMarkupObj[id]["wrapperStyle"] + ",";
-     dataString += arrangeFieldsDialogMarkupObj[id]["zIndex"] + ",";
+     elementData.type          = "markup";
+     elementData.markup_width  = jQuery(element).width() + "px";
+     elementData.markup_height = jQuery(element).height() + "px";
+     elementData.markup_body   = arrangeFieldsDialogMarkupObj[id]["markupBody"];
+     elementData.wrapper_style = arrangeFieldsDialogMarkupObj[id]["wrapperStyle"];
+     elementData.z_index       = arrangeFieldsDialogMarkupObj[id]["zIndex"];
    }
    
-   dataString += ";";
+   formData.draggableElements.push(elementData);
    
    var bottom = parseInt(top) + jQuery(element).height();
    if (bottom > maxBottom) {
@@ -229,11 +241,14 @@ function arrangeFieldsSavePositions() {
    
   // This maxBottom value tells us how tall the container needs to be on the node/edit page
   // for this form.
-  dataString += "~~maxBottom~~," + maxBottom + "px";
+  formData.maxBottom = maxBottom +"px";
+
+  // Encode form data as JSON string
+  dataString = JSON.stringify(formData);
+
   //console.log(dataString);
   //return false;
   jQuery("#edit-arrange-fields-position-data").val(dataString);
-
 }
 
 function arrangeFieldsConfirmReset() {

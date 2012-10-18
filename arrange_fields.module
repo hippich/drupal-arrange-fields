@@ -131,6 +131,53 @@ function arrange_fields_permission() {
   return $arr;
 }
 
+
+/**
+ * Implementation of hook_theme()
+ */
+function arrange_fields_theme($existing, $type, $theme, $path) {
+
+  $variables = array(
+    'fid' => NULL, 
+    'wrapper_id' => NULL,
+    'pos_top' => NULL,
+    'pos_left' => NULL,
+    'element_type' => NULL,
+    'element_id' => NULL,
+    'width' => 'auto',
+    'height' => 'auto',
+    'wrapper_width' => 'auto',
+    'wrapper_height' => 'auto',
+    'label_display' => 'block',
+    'label_width' => 'auto',
+    'label_vertical_align' => NULL,
+    'type' => NULL,
+    'markup_width' => NULL,
+    'markup_height' => NULL,
+    'markup_body' => NULL,
+    'wrapper_style' => NULL,
+    'z_index' => NULL,
+  );
+
+  return array(
+    'arrange_fields_css_markup_and_elements' => array(
+      'variables' => array('fid' => NULL, 'form_data' => NULL, 'form_id' => NULL),
+      'template'  => 'arrange_fields_css_markup_and_elements',
+      'path'      => drupal_get_path('module', 'arrange_fields'). '/themes/',
+    ),
+    'arrange_fields_draggable_element_css' => array(
+      'variables' => $variables,
+      'template'  => 'arrange_fields_draggable_element_css',
+      'path'      => drupal_get_path('module', 'arrange_fields'). '/themes/',
+    ),
+    'arrange_fields_draggable_element_markup' => array(
+      'variables' => $variables,
+      'template'  => 'arrange_fields_draggable_element_markup',
+      'path'      => drupal_get_path('module', 'arrange_fields'). '/themes/',
+    ),
+  );
+}
+
 /**
  * This function returns a form which we will use to configure
  * the arrange_fields module.  It is called
@@ -785,6 +832,11 @@ function arrange_fields_render_dialogs() {
               <label><input type='radio' name='af-dialog-label-display' value='' checked> default (block)</label>
               <label><input type='radio' name='af-dialog-label-display' value='inline-block' > inline</label>
             </div>
+            <table>
+              <tr>
+                <td width='45%'>Label width:</td><td><input type='input' name='af-dialog-label-width' size='6'></td>
+              </tr>
+            </table>
            </div>";
   
 
@@ -989,6 +1041,7 @@ function arrange_fields_add_draggable_wrappers(&$form, $form_type, $disable_butt
     if (!isset($element["#af_prefix"])) $element["#af_prefix"] = "";
     if (!isset($element["#af_suffix"])) $element["#af_suffix"] = "";
     
+    $element["#af_wrapper_id"] = $css_id;
     $element["#af_prefix"] .= "<div id='$css_id' class='$css_class'>$edit_link";
     $element["#af_suffix"] .= "</div>"; 
    
@@ -1085,9 +1138,13 @@ function arrange_fields_pre_render($element) {
 function arrange_fields_get_form_fields(&$arr, $previous_key = "") {
   
   $rtn = array();
-
-  // Since fieldsets are not supported yet, hide these from fields arrange form.
-  unset($arr['#groups']);
+  
+  // Since fieldsets are not supported - hide 'em
+  if (array_key_exists('#groups', $arr)) {
+    foreach ($arr["#groups"] as $v) {
+      $v->format_type = 'hidden';
+    }
+  }
 
   foreach ($arr as $name => &$element) {
     if (is_array($element)) {
@@ -1127,7 +1184,7 @@ function arrange_fields_get_form_fields(&$arr, $previous_key = "") {
           && $element["#type"] != "token"
           && $element["#type"] != "value" ) {
         // We found an element!  Save its reference in our return array.
-        
+
         // If the name is numeric (as is the case with some Fields elements), we
         // actually want to use the previous element.
         if (is_numeric($name) && $previous_key != "") {
@@ -1230,7 +1287,7 @@ function arrange_fields_form_alter(&$form, &$form_state, $form_id) {
     // Let's unset the various elements which will just get in the
     // way of the fields.
     unset($form["#submit"]);
-    
+
     $form["#attributes"]["class"] = "arrange-fields-container";
             
     if (!af_get($GLOBALS["arrange_fields_added_wrappers_" . $form["form_id"]["#value"]])) {
@@ -1265,180 +1322,36 @@ function arrange_fields_form_alter(&$form, &$form_state, $form_id) {
       arrange_fields_add_draggable_wrappers($form, $form_type);
     }
 
+    $form_data = drupal_json_decode($position_data);
+
     // Let's go through and assign the positions.
     $jsConfigArray = array();
     $jsMarkupArray = array();
-    $css_markup = $markup_elements = "";
-    $lines = explode(";", $position_data);
-    foreach ($lines as $line) {
-      if (trim($line) == "") continue; // skip blanks
-      
-      $temp = explode(",", $line);
-      $wrapper_id = trim(af_get($temp[0]));
-      $pos_top = trim(af_get($temp[1]));
-      $pos_left = trim(af_get($temp[2]));
-      $element_type = trim(af_get($temp[3]));
-      $element_id = trim(af_get($temp[4]));
-      $width = trim(af_get($temp[5]));
-      $height = trim(af_get($temp[6]));
-      $wrapper_width = trim(af_get($temp[7]));
-      $wrapper_height = trim(af_get($temp[8]));
-      $label_display = trim(af_get($temp[9]));
-      $label_vertical_align = trim(af_get($temp[10]));
-      
-      $text_label_display = $label_display;
-      if ($label_display == "inline-block") {
-        $text_label_display = "inline";
-      }
-      
-      
-      if ($wrapper_id == "~~maxBottom~~") {
-        // This is actually the height of the container.  Let's set that,
-        // then continue.
-        $css_markup .= " .arrange-fields-container-$fid {
-                      height: $pos_top;
-                        }";
-        continue;
-      }
 
-      // Was this actually a markup element which the user added?
-      // If so, add 
-      if ($temp[7] == "~~markup_element~~") {
+    foreach ($form_data['draggableElements'] as $el) {
+      $wrapper_id = $el['wrapper_id'];
 
-        $markup_width = af_get($temp[8]);
-        $markup_height = af_get($temp[9]); 
-        $safe_markup_body = trim(af_get($temp[10]));
-        $markup_body = arrange_fields_unconvert_unsafe_chars(trim(af_get($temp[10])));
-        $safe_wrapper_style = trim(af_get($temp[11]));
-        $wrapper_style = arrange_fields_unconvert_unsafe_chars(trim(af_get($temp[11])));
-        $z_index = trim(af_get($temp[12]));
-        
-        $markup_elements .= "
-        <div class='draggable-form-item arrange-fields-draggable-markup' 
-              id='$wrapper_id'>
-          <div class='arrange-fields-control-handle arrange-fields-control-handle-markup'><span class='arrange-fields-handle-region'> &nbsp; &nbsp; </span>
-            <a href='javascript: arrangeFieldsDialogEditMarkup(\"$wrapper_id\");' class='arrange-fields-config-markup-link' title='Configure this markup'>&nbsp;</a>
-          </div>
-          <div class='arrange-fields-markup-body form-item' 
-              id='{$wrapper_id}_body'>$markup_body</div>
-        </div>";
-        
-        $css_markup .= "
-          #$fid #$wrapper_id {
-            top: $pos_top;
-            left: $pos_left;
-            width: $markup_width;
-            height: $markup_height;
-            z-index: $z_index;
-            $wrapper_style
-          }
-        ";
-        
+      if (array_key_exists('type', $el) && $el['type'] == 'markup') {
         // Add this bit of markup to our jsMarkupArray, so it can be
         // added as a setting later.
-        $jsMarkupArray[$wrapper_id]["markupBody"] = $safe_markup_body;
-        $jsMarkupArray[$wrapper_id]["wrapperStyle"] = $safe_wrapper_style;
-        $jsMarkupArray[$wrapper_id]["zIndex"] = $z_index;
+        $jsMarkupArray[$wrapper_id]["markupBody"] = af_get($el['markup_body']);
+        $jsMarkupArray[$wrapper_id]["wrapperStyle"] = af_get($el['wrapper_style']);
+        $jsMarkupArray[$wrapper_id]["zIndex"] = af_get($el['z_index']);
         
         continue;
       }
       
-      
-      $jsConfigArray[$wrapper_id]["wrapperWidth"] = $wrapper_width;
-      $jsConfigArray[$wrapper_id]["wrapperHeight"] = $wrapper_height;
-      $jsConfigArray[$wrapper_id]["labelDisplay"] = $label_display;
-      $jsConfigArray[$wrapper_id]["labelVerticalAlign"] = $label_vertical_align;
-          
-      // Add to our CSS markup value...
-      $css_markup .= "      
-        #$fid #$wrapper_id{        
-          top: $pos_top;
-          left: $pos_left; 
-        }
-      ";
+      $jsConfigArray[$wrapper_id]["wrapperWidth"] = af_get($el['wrapper_width']);
+      $jsConfigArray[$wrapper_id]["wrapperHeight"] = af_get($el['wrapper_height']);
+      $jsConfigArray[$wrapper_id]["labelWidth"] = af_get($el['label_width']);
+      $jsConfigArray[$wrapper_id]["labelDisplay"] = af_get($el['label_display']);
+      $jsConfigArray[$wrapper_id]["labelVerticalAlign"] = af_get($el['label_vertical_align']);
 
-      
-      // We do not want to try to resize any input fields if this
-      // is the buttons wrapper.  Otherwise it will mess up our buttons.
-      // This usually happens when you have CAPTCHA installed.
-      if ($width != "0px" && $element_type != "" && $element_id == "" && !strstr($wrapper_id, "-vertical-tabs-")) {        
-        
-        // We do not know the element_id in this situation        
-        $css_markup .= "        
-          #$fid #$wrapper_id $element_type.form-text, 
-          #$fid #$wrapper_id $element_type.form-textarea {
-            width: $width;
-            height: $height;
-          }
-          ";
-      }
-      else if ($width != "0px" && $element_type != "" && $element_id != "" && !strstr($wrapper_id, "-vertical-tabs-")) {
-        
-        // We know the element id, which makes this simpler.
-        $css_markup .= "
-          #$fid #$wrapper_id $element_type#$element_id {
-            width: $width;
-            ";
-        // If this is an input field (not a textarea) we do not need to specify the height.
-        // This is hopefully a fix to a bug where, for some users, their textfields get shrunk down
-        // to only 1px.
-        if ($element_type != "input") {          
-          $css_markup .= "
-              height: $height;        
-            ";        
+      // Find element in $form and add classes
+      foreach ($form as &$item) {
+        if (is_array($item) && array_key_exists('#af_wrapper_id', $item) && $item['#af_wrapper_id'] == $el['wrapper_id']) {
+          $item['#attributes']['class'][] = 'arrange-fields-label-'. af_get($el['label_display']);
         }
-        
-        $css_markup .= "    }        ";
-        
-      }
-      
-      // Handle any configurations which were set in the configure dialog.
-      if ($wrapper_width != "") {
-        $css_markup .= " #$fid #$wrapper_id { width: $wrapper_width; } ";
-      }
-      if ($wrapper_height != "") {
-        $css_markup .= "
-          #$fid #$wrapper_id { height: $wrapper_height; } 
-          #$fid #$wrapper_id fieldset { height: 100%; } 
-        ";
-      }
-      if ($label_display != "") {
-        
-        $css_markup .= "
-          #$fid #$wrapper_id .form-item label { 
-            vertical-align: $label_vertical_align; 
-          }
-          #$fid #$wrapper_id .form-item > input, 
-          #$fid #$wrapper_id .form-item > label,
-          #$fid #$wrapper_id .form-item > div,
-          #$fid #$wrapper_id .form-item > div.form-radios > div,
-          #$fid #$wrapper_id .form-item > div.form-checkboxes > div
-          {
-            display: $label_display;
-          }";
-        
-        if ($element_type == "input") {
-          // Because of IE, we must do something special if the input
-          // is a textfield, which is what this is testing for.
-          // Basically, the label cannot have a display of "inline-block",
-          // it must simply be "inline."  However, the textfield itself still
-          // needs to be "inline-block."  Thanks IE!
-          $css_markup .= "
-            #$fid #$wrapper_id .form-item > label
-            {
-              display: $text_label_display;
-            }
-          ";
-        }
-        
-        
-        $css_markup .= "  
-          #$fid #$wrapper_id .form-item div.ui-resizable-handle,
-          #$fid #$wrapper_id .form-item div.description
-          {
-            display: block;
-          }                          
-                ";
       }
     }
     
@@ -1447,39 +1360,12 @@ function arrange_fields_form_alter(&$form, &$form_state, $form_id) {
     // Add in the user-specified grid width.
     drupal_add_js(array("arrangeFieldsGridWidth" => variable_get("arrange_fields_grid_width", 10)), "setting");
         
-    
-    if ($GLOBALS["arrange_fields_editing"] != $form_id) {
-      // Meaning, we are not currently arranging this form.  The user
-      // must actually be putting data into it on the node/edit page.  
-      // Let's remove the extra
-      // styles around the various divs so that it looks more natural.
-      $css_markup .= "
-      
-      #$fid {
-        border: 0;
-        background: none;
-      }
-      
-      #$fid .draggable-form-item {
-        border: 0;
-        background-color: transparent;
-      }
-      
-      ";
-    }
-    
-    
-    // Now, add in our css markup and markup elements...
-    /*$head_array = array(
-      "#tag" => "style",
-      "#attributes" => array(
-        "type" => "text/css",
-      ),
-      "#value" => $css_markup,
-    );*/
-    //drupal_add_html_head($head_array, "arrange_fields_position_data");
     $form["arrange_fields_css_markup_and_elements"] = array(    
-      "#markup" => "<style>$css_markup</style>$markup_elements",      
+      "#markup" => theme('arrange_fields_css_markup_and_elements', array(
+        'fid' => $fid,
+        'form_data' => $form_data,
+        'form_id' => $form_id,
+      )),
       "#after_build" => array("arrange_fields_add_form_css_js"),  // important if the form fails validation, we still get the CSS and JS added in.
     );
 

@@ -75,12 +75,16 @@
     if (arrangeFieldsDialogConfigObj[fieldId]["labelVerticalAlign"] == null) {
       arrangeFieldsDialogConfigObj[fieldId]["labelVerticalAlign"] = "";
     }
+    if (arrangeFieldsDialogConfigObj[fieldId]["labelWidth"] == null) {
+      arrangeFieldsDialogConfigObj[fieldId]["labelWidth"] = "";
+    }
     
   
     // Let's reset the inputs in the dialog to use whatever is in the
     // config obj.
     dia.find("input[name=af-dialog-width]").val(arrangeFieldsDialogConfigObj[fieldId]["wrapperWidth"]);
     dia.find("input[name=af-dialog-height]").val(arrangeFieldsDialogConfigObj[fieldId]["wrapperHeight"]);
+    dia.find("input[name=af-dialog-label-width]").val(arrangeFieldsDialogConfigObj[fieldId]["labelWidth"]);
     dia.find("input[name=af-dialog-label-display]").each(function() {
       if (jQuery(this).val() == arrangeFieldsDialogConfigObj[fieldId]["labelDisplay"]
           || jQuery(this).val() == arrangeFieldsDialogConfigObj[fieldId]["labelDisplay"] + "-block") {
@@ -111,6 +115,7 @@
     
     var wrapperWidth = dia.find("input[name=af-dialog-width]").val();
     var wrapperHeight = dia.find("input[name=af-dialog-height]").val();
+    var labelWidth = dia.find("input[name=af-dialog-label-width]").val();
     var labelDisplay = dia.find("input[name=af-dialog-label-display]:checked").val();
        
     // Remove trouble characters, if they exist.
@@ -124,8 +129,10 @@
     
     arrangeFieldsDialogConfigObj[fieldId]["wrapperWidth"] = wrapperWidth;
     arrangeFieldsDialogConfigObj[fieldId]["wrapperHeight"] = wrapperHeight;
+    arrangeFieldsDialogConfigObj[fieldId]["labelWidth"] = labelWidth;
     if (wrapperWidth == "") { wrapperWidth = "auto"; }
     if (wrapperHeight == "") { wrapperHeight = "auto"; }
+    if (labelWidth == "") { labelWidth = "auto"; }
     
     if (fieldType != "vertical_tabs" && fieldType != "fieldset") {
       arrangeFieldsDialogConfigObj[fieldId]["labelDisplay"] = labelDisplay;
@@ -135,6 +142,7 @@
     // Let's actually affect these changes on the page.
     jQuery("#" + fieldId).css("width", wrapperWidth);
     jQuery("#" + fieldId).css("height", wrapperHeight);
+    jQuery("#" + fieldId + " label").css("width", labelWidth);
     
     
     var valign = "top";
