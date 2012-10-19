@@ -144,10 +144,10 @@ function arrange_fields_theme($existing, $type, $theme, $path) {
     'pos_left' => NULL,
     'element_type' => NULL,
     'element_id' => NULL,
-    'width' => 'auto',
-    'height' => 'auto',
-    'wrapper_width' => 'auto',
-    'wrapper_height' => 'auto',
+    'width' => NULL,
+    'height' => NULL,
+    'wrapper_width' => NULL,
+    'wrapper_height' => NULL,
     'label_display' => 'block',
     'label_width' => 'auto',
     'label_vertical_align' => NULL,
@@ -1442,13 +1442,6 @@ function arrange_fields_add_form_css_js($element) {
  * @return string
  */
 function arrange_fields_unconvert_unsafe_chars($str) {
-
-  $str = str_replace("_~!co%~_", ",", $str);
-  $str = str_replace("_~!sc%~_", ";", $str);
-  $str = str_replace("_~!sq%~_", "'", $str);
-  $str = str_replace("_~!dq%~_", '"', $str);
-  $str = str_replace("_~!nl%~_", "\n", $str);
-  
   return $str;
 }
 

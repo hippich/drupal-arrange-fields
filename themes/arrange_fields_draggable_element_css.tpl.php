@@ -64,11 +64,11 @@ else if ($width != "0px" && $element_type != "" && $element_id != "" && !strstr(
 }
 
 // Handle any configurations which were set in the configure dialog.
-if ($wrapper_width != "") {
+if ($wrapper_width != "" && $wrapper_width != 'auto') {
   $css_markup .= " #$fid #$wrapper_id { width: $wrapper_width; } ";
 }
 
-if ($wrapper_height != "") {
+if ($wrapper_height != "" && $wrapper_height != 'auto') {
   $css_markup .= "
     #$fid #$wrapper_id { height: $wrapper_height; } 
     #$fid #$wrapper_id fieldset { height: 100%; } 

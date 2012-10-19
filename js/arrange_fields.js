@@ -64,7 +64,6 @@ Drupal.behaviors.arrangeFieldsStartup = {
   arrangeFieldsStartupHeight = 0;
   arrangeFieldsGreatestHeight = 0; 
 
-  
   jQuery(".arrange-fields-container .draggable-form-item:not(.draggable-form-item-fieldset, .arrange-fields-vertical-tabs-wrapper) textarea").resizable();
   jQuery(".arrange-fields-container .draggable-form-item:not(.draggable-form-item-fieldset, .arrange-fields-vertical-tabs-wrapper) .form-text").resizable({
         handles: 'e'
@@ -179,14 +178,16 @@ function arrangeFieldsSavePositions() {
    // But, only do this if we are NOT within a fieldset!
    if (jQuery(element).hasClass("draggable-form-item-fieldset") == false) {
      var test = jQuery(element).find("textarea");
-     width = jQuery(test).width();
-     height = jQuery(test).height();
-     if (width != null) inner_element_type = "textarea";
-     
-     if (width == null) {
+     width = (test.css('width') != null) ? test.css('width') : test.width() + 'px';
+     height = (test.css('height') != null) ? test.css('height') : test.height() + 'px';
+
+     if (test.length > 0) {
+       inner_element_type = "textarea";
+     }
+     else {
        test = jQuery(element).find("input:text");       
-       width = jQuery(test).width();
-       height = jQuery(test).height();
+       width = (test.css('width') != null) ? test.css('width') : test.width() + 'px';
+       height = (test.css('height') != null) ? test.css('height') : test.height() + 'px';
        if (width != null) inner_element_type = "input";
      }
      
@@ -197,17 +198,13 @@ function arrangeFieldsSavePositions() {
           
    }
 
-   if (width == null) {
-     width = height = 0;
-   }   
-   
    elementData.wrapper_id = id;
    elementData.pos_top = top;
    elementData.pos_left = left;
    elementData.element_type = inner_element_type;
    elementData.element_id = inner_element_id;
-   elementData.width = width + "px";
-   elementData.height = height + "px";
+   elementData.width = width;
+   elementData.height = height;
 
    
    // Do we have any extra data for this element?  Perhaps data from the config dialog?

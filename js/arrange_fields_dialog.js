@@ -338,15 +338,6 @@
    * have typed them into the field.
    **/
   function arrangeFieldsConvertUnsafeChars(str) {
-  
-    // Must use regex with the "g" to replace all occurances (like in PHP)
-    str = str.replace(/,/g, "_~!co%~_");
-    str = str.replace(/;/g, "_~!sc%~_");
-    str = str.replace(/'/g, "_~!sq%~_");  //'
-    str = str.replace(/"/g, "_~!dq%~_");  //"
-    str = str.replace(/\n/g, "_~!nl%~_");
-  
-  
     return str;
   }
   
@@ -354,14 +345,6 @@
    * The opposite of ConvertUnsafeChars
    **/
   function arrangeFieldsUnconvertUnsafeChars(str) {
-  
-    // Must use regex with the "g" to replace all occurances (like in PHP)
-    str = str.replace(/_~!co%~_/g, ",");
-    str = str.replace(/_~!sc%~_/g, ";");
-    str = str.replace(/_~!sq%~_/g, "'");
-    str = str.replace(/_~!dq%~_/g, '"');
-    str = str.replace(/_~!nl%~_/g, "\n");
-    
     return str;
   }
   
