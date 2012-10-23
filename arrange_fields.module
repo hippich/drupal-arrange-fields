@@ -837,6 +837,11 @@ function arrange_fields_render_dialogs() {
                 <td width='45%'>Label width:</td><td><input type='input' name='af-dialog-label-width' size='6'></td>
               </tr>
             </table>
+            <div id='arrange-fields-config-dialog-flow'>
+              Use document flow: 
+              <label><input type='radio' name='af-dialog-element-flow' value='no' checked> no </label>
+              <label><input type='radio' name='af-dialog-element-flow' value='yes'> yes </label>
+            </div>
            </div>";
   
 
@@ -885,6 +890,8 @@ function arrange_fields_render_dialogs() {
  */
 function arrange_fields_add_draggable_wrappers(&$form, $form_type, $disable_buttons = FALSE) {
 
+  $form_id = $form['#form_id'];
+
   // Figure out just what are the fields for this form.
   if ($form_type == "webform") {    
     // If we are dealing with a webform, then we need to make sure
@@ -932,6 +939,13 @@ function arrange_fields_add_draggable_wrappers(&$form, $form_type, $disable_butt
   else {
     // Not using webform, so we can use the function "get_form_fields()".
     $fields = arrange_fields_get_form_fields($form);
+  }
+
+  // Get fields position data if available
+  $form_data = FALSE;
+  $position_data = variable_get("arrange_fields_position_data_$form_id", FALSE);
+  if ($position_data) {
+    $form_data = drupal_json_decode($position_data);
   }
 
   // Make each field draggable by adding wrappers to it.
@@ -1032,6 +1046,18 @@ function arrange_fields_add_draggable_wrappers(&$form, $form_type, $disable_butt
     // them in CSS.
     if ($element_type == "vertical_tabs") {
       $css_class .= " arrange-fields-vertical-tabs-wrapper ";
+    }
+
+
+    // Scan through position information and append necessary changes to html wrappers
+    if (is_array($form_data) && is_array($form_data['draggableElements'])) {
+      foreach ($form_data['draggableElements'] as $el) {
+        if ($css_id == $el['wrapper_id']) {
+          if ($el['element_flow'] == 'yes') {
+            $css_class .= ' arrange-fields-normal-flow';
+          }
+        }
+      }
     }
     
     
@@ -1140,73 +1166,74 @@ function arrange_fields_get_form_fields(&$arr, $previous_key = "") {
   $rtn = array();
   
   // Since fieldsets are not supported - hide 'em
-  if (array_key_exists('#groups', $arr)) {
+/*  if (array_key_exists('#groups', $arr)) {
     foreach ($arr["#groups"] as $v) {
       $v->format_type = 'hidden';
     }
-  }
+} */
 
-  foreach ($arr as $name => &$element) {
-    if (is_array($element)) {
- 
-/*      // Is this element a fieldset and part of the additional_settings
-      // vertical tabs group?  If so, let's exclude it.
-      if (isset($element["#group"])
-          && $element["#group"] == "additional_settings") {
-          
-          continue;
+  // Get all element's children
+  $elements_keys = element_children($arr);
+
+  foreach ($elements_keys as $name) {
+    $element = &$arr[$name];
+
+    // Is this element a fieldset and part of the additional_settings
+    // vertical tabs group?  If so, let's exclude it.
+    if (isset($element["#group"]) && $element["#group"] == "additional_settings") {
+      continue;
+    }
+
+    // Regarding the code above, I *think* it would be safe to exclude
+    // ANY element which has it's #group property set, because this is
+    // only used when adding a fieldset to a vertical tab, and in Arrange Fields
+    // we are just going to ignore those.
+    if (isset($element["#group"]) && $element["#group"] != "") {
+      continue;
+    }
+    
+    if (isset($element['#type']) && in_array($element['#type'], array('vertical_tabs'))) {
+      continue;
+    }
+    
+
+    // Is this the buttons element on a node form?  If so, we want
+    // the entire buttons array, NOT each individual button (this was
+    // causing a bug where Diff's View changes and the Delete button
+    // were not arrangeable.
+   if ($name == "buttons"        
+      && !isset($element["#type"]) 
+      && isset($element["submit"])
+      && $element["submit"]["#type"] == "submit") {
+      continue;
+    }      
+    elseif (isset($element["#type"])
+        && $element["#type"] != "hidden"
+        && $element["#type"] != "token"
+        && $element["#type"] != "value" ) {
+      // We found an element!  Save its reference in our return array.
+
+      // If the name is numeric (as is the case with some Fields elements), we
+      // actually want to use the previous element.
+      if (is_numeric($name) && $previous_key != "") {
+        // Let's use the previous element here, which should be $arr.
+        $rtn[] = array("name" => $previous_key, "element" => &$arr);
       }
-*/      
-      // Regarding the code above, I *think* it would be safe to exclude
-      // ANY element which has it's #group property set, because this is
-      // only used when adding a fieldset to a vertical tab, and in Arrange Fields
-      // we are just going to ignore those.
-      if (isset($element["#group"]) && $element["#group"] != "") {
-        continue;
+      else {        
+        // Add to our return array.
+        $rtn[] = array("name" => $name, "element" => &$element);
       }
       
-      
-
-      // Is this the buttons element on a node form?  If so, we want
-      // the entire buttons array, NOT each individual button (this was
-      // causing a bug where Diff's View changes and the Delete button
-      // were not arrangeable.
-     if ($name == "buttons"        
-        && !isset($element["#type"]) 
-        && isset($element["submit"])
-        && $element["submit"]["#type"] == "submit") {
-        // Okay, we found it (most likely, anyway).
-        // Let's add it to our return array.                      
-        $rtn[] = array("name" => $name, "element" => &$element);          
-      }      
-      elseif (isset($element["#type"])
-          && $element["#type"] != "hidden"
-          && $element["#type"] != "token"
-          && $element["#type"] != "value" ) {
-        // We found an element!  Save its reference in our return array.
-
-        // If the name is numeric (as is the case with some Fields elements), we
-        // actually want to use the previous element.
-        if (is_numeric($name) && $previous_key != "") {
-          // Let's use the previous element here, which should be $arr.
-          $rtn[] = array("name" => $previous_key, "element" => &$arr);
-        }
-        else {        
-          // Add to our return array.
-          $rtn[] = array("name" => $name, "element" => &$element);
-        }
-        
-      }
-      else {
-        // This is not a field, but possibly another level of nesting
-        // in our $form.  So, let's recursively call this function
-        // and explore this new level.                
-        $temp = arrange_fields_get_form_fields($element, $name);
-        // It's possible we did indeed find some fields in the nested sub-array
-        // we just explored.  If so, let's add it to the end of our on-going
-        // return array.
-        $rtn = array_merge($rtn, $temp);
-      }
+    }
+    else {
+      // This is not a field, but possibly another level of nesting
+      // in our $form.  So, let's recursively call this function
+      // and explore this new level.                
+      $temp = arrange_fields_get_form_fields($element, $name);
+      // It's possible we did indeed find some fields in the nested sub-array
+      // we just explored.  If so, let's add it to the end of our on-going
+      // return array.
+      $rtn = array_merge($rtn, $temp);
     }
   }
   
@@ -1317,6 +1344,10 @@ function arrange_fields_form_alter(&$form, &$form_state, $form_id) {
     
     $form["#attributes"]["class"] .= " arrange-fields-container ";
     $form["#attributes"]["class"] .= " arrange-fields-container-$fid ";
+    $form["spacer"] = array(
+      '#markup' => '<div id="arrange-fields-form-spacer-'. $fid .'"></div>',
+      '#weight' => -9999,
+    );
     
     if (!af_get($GLOBALS["arrange_fields_added_wrappers_" . $form["form_id"]["#value"]])) {
       arrange_fields_add_draggable_wrappers($form, $form_type);
@@ -1346,11 +1377,16 @@ function arrange_fields_form_alter(&$form, &$form_state, $form_id) {
       $jsConfigArray[$wrapper_id]["labelWidth"] = af_get($el['label_width']);
       $jsConfigArray[$wrapper_id]["labelDisplay"] = af_get($el['label_display']);
       $jsConfigArray[$wrapper_id]["labelVerticalAlign"] = af_get($el['label_vertical_align']);
+      $jsConfigArray[$wrapper_id]["element_flow"] = af_get($el['element_flow']);
 
       // Find element in $form and add classes
       foreach ($form as &$item) {
         if (is_array($item) && array_key_exists('#af_wrapper_id', $item) && $item['#af_wrapper_id'] == $el['wrapper_id']) {
           $item['#attributes']['class'][] = 'arrange-fields-label-'. af_get($el['label_display']);
+
+          if (af_get($el['element_flow']) == 'yes') {
+            $item['#attributes']['class'][] = 'arrange-fields-normal';
+          }
         }
       }
     }

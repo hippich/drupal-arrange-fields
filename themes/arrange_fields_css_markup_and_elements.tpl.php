@@ -1,6 +1,16 @@
 <style>
+  .arrange-fields-normal-flow {
+    position: static !important;
+  }
+
   .arrange-fields-container-<?php print $fid; ?> { 
+    min-height: <?php print $form_data['maxBottom']; ?>; 
+  }
+
+  #arrange-fields-form-spacer-<?php print $fid; ?> {
     height: <?php print $form_data['maxBottom']; ?>; 
+    width: 100%;
+    clear: both;
   }
 
   <?php foreach ($form_data['draggableElements'] as $el): ?>
@@ -25,4 +35,3 @@
     <?php print theme('arrange_fields_draggable_element_markup', array('fid' => $fid) + $el); ?>
   <?php endif; ?>
 <?php endforeach; ?>
-

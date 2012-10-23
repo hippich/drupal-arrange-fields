@@ -78,6 +78,9 @@
     if (arrangeFieldsDialogConfigObj[fieldId]["labelWidth"] == null) {
       arrangeFieldsDialogConfigObj[fieldId]["labelWidth"] = "";
     }
+    if (arrangeFieldsDialogConfigObj[fieldId]["element_flow"] == null) {
+      arrangeFieldsDialogConfigObj[fieldId]["element_flow"] = "";
+    }
     
   
     // Let's reset the inputs in the dialog to use whatever is in the
@@ -88,6 +91,12 @@
     dia.find("input[name=af-dialog-label-display]").each(function() {
       if (jQuery(this).val() == arrangeFieldsDialogConfigObj[fieldId]["labelDisplay"]
           || jQuery(this).val() == arrangeFieldsDialogConfigObj[fieldId]["labelDisplay"] + "-block") {
+        jQuery(this).attr("checked", "checked");
+      }
+    });
+    dia.find("input[name=af-dialog-element-flow]").each(function() {
+      if (jQuery(this).val() == arrangeFieldsDialogConfigObj[fieldId]["element_flow"]
+          || jQuery(this).val() == arrangeFieldsDialogConfigObj[fieldId]["element_flow"]) {
         jQuery(this).attr("checked", "checked");
       }
     });
@@ -117,6 +126,7 @@
     var wrapperHeight = dia.find("input[name=af-dialog-height]").val();
     var labelWidth = dia.find("input[name=af-dialog-label-width]").val();
     var labelDisplay = dia.find("input[name=af-dialog-label-display]:checked").val();
+    var element_flow = dia.find("input[name=af-dialog-element-flow]:checked").val();
        
     // Remove trouble characters, if they exist.
     wrapperWidth = wrapperWidth.replace(";", "");
@@ -130,6 +140,7 @@
     arrangeFieldsDialogConfigObj[fieldId]["wrapperWidth"] = wrapperWidth;
     arrangeFieldsDialogConfigObj[fieldId]["wrapperHeight"] = wrapperHeight;
     arrangeFieldsDialogConfigObj[fieldId]["labelWidth"] = labelWidth;
+    arrangeFieldsDialogConfigObj[fieldId]["element_flow"] = element_flow;
     if (wrapperWidth == "") { wrapperWidth = "auto"; }
     if (wrapperHeight == "") { wrapperHeight = "auto"; }
     if (labelWidth == "") { labelWidth = "auto"; }
@@ -143,6 +154,13 @@
     jQuery("#" + fieldId).css("width", wrapperWidth);
     jQuery("#" + fieldId).css("height", wrapperHeight);
     jQuery("#" + fieldId + " label").css("width", labelWidth);
+
+    if (element_flow == 'yes') {
+      jQuery("#" + fieldId).addClass("arrange-fields-normal-flow");
+    }
+    else {
+      jQuery("#" + fieldId).removeClass("arrange-fields-normal-flow");
+    }
     
     
     var valign = "top";

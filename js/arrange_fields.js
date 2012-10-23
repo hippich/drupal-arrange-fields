@@ -214,6 +214,7 @@ function arrangeFieldsSavePositions() {
      elementData.label_display = arrangeFieldsDialogConfigObj[id]["labelDisplay"];
      elementData.label_width = arrangeFieldsDialogConfigObj[id]["labelWidth"];
      elementData.label_vertical_align = arrangeFieldsDialogConfigObj[id]["labelVerticalAlign"];
+     elementData.element_flow = arrangeFieldsDialogConfigObj[id]["element_flow"];
    }
    
    // Is this field a piece of custom markup which the user has added?  If so,
@@ -229,15 +230,18 @@ function arrangeFieldsSavePositions() {
    
    formData.draggableElements.push(elementData);
    
-   var bottom = parseInt(top) + jQuery(element).height();
-   if (bottom > maxBottom) {
-     maxBottom = bottom;
+   if (elementData.element_flow != 'yes') {
+     var bottom = parseInt(top) + jQuery(element).height();
+     if (bottom > maxBottom) {
+       maxBottom = bottom;
+     }
    }
    
   });
    
   // This maxBottom value tells us how tall the container needs to be on the node/edit page
   // for this form.
+  maxBottom += 20;
   formData.maxBottom = maxBottom +"px";
 
   // Encode form data as JSON string
