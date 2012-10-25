@@ -1053,7 +1053,7 @@ function arrange_fields_add_draggable_wrappers(&$form, $form_type, $disable_butt
     if (is_array($form_data) && is_array($form_data['draggableElements'])) {
       foreach ($form_data['draggableElements'] as $el) {
         if ($css_id == $el['wrapper_id']) {
-          if ($el['element_flow'] == 'yes') {
+          if (isset($el['element_flow']) && $el['element_flow'] == 'yes') {
             $css_class .= ' arrange-fields-normal-flow';
           }
         }
