@@ -1315,7 +1315,7 @@ function arrange_fields_form_alter(&$form, &$form_state, $form_id) {
     // way of the fields.
     unset($form["#submit"]);
 
-    $form["#attributes"]["class"] = "arrange-fields-container";
+    $form["#attributes"]["class"][] = "arrange-fields-container";
             
     if (!af_get($GLOBALS["arrange_fields_added_wrappers_" . $form["form_id"]["#value"]])) {
       arrange_fields_add_draggable_wrappers($form, $form_type, TRUE);
@@ -1342,8 +1342,8 @@ function arrange_fields_form_alter(&$form, &$form_state, $form_id) {
 
     $fid = $form["#id"];  // The form's CSS id.  We will use it later to target just this one form.    
     
-    $form["#attributes"]["class"] .= " arrange-fields-container ";
-    $form["#attributes"]["class"] .= " arrange-fields-container-$fid ";
+    $form["#attributes"]["class"][] = "arrange-fields-container";
+    $form["#attributes"]["class"][] = "arrange-fields-container-$fid ";
     $form["spacer"] = array(
       '#markup' => '<div id="arrange-fields-form-spacer-'. $fid .'"></div>',
       '#weight' => -9999,
